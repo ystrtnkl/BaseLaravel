@@ -1,0 +1,90 @@
+# Services
+services:
+  # Apache + PHP
+  apache_php-cont:
+    build:
+      context: ./.docker
+      dockerfile: Dockerfile
+    container_name: apache_php-cont
+    # Preparamos un volumen para almacenar nuestro código
+    volumes:
+      - ./varwwwhtml/:/var/www/html
+      - ./.docker/apache/000-default.conf:/etc/apache2/sites-enabled/000-default.conf
+      - ./.docker/php/php.ini:/usr/local/etc/php/php.ini-development
+      - .docker/xdebug/debug.ini:/usr/local/etc/php/conf.d/debug.ini
+    expose:
+      - 80
+    ports:
+      - 8081:80
+    networks:
+      - todored
+    links:
+      - mariadb-cont
+      - mongo-cont
+      - redis-cont
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    #user: "1002:1002" # IMPORTANTE: UID:GID     (id -u ; id -g)
+    #user: ${whoami}:${whoami} #ciclost:ciclost
+    command: >
+      bash -c "chmod -R 0777 /var/www/html && apache2-foreground"
+
+
+  mariadb-cont:
+    restart: on-failure
+    build:
+      context: ./.docker
+      #dockerfile: DockerfileDB
+    image: mariadb
+    #command: 
+    #  --default-authentication-plugin=mysql_native_password
+
+    env_file: "./.docker/.env"
+    #environment:
+    #  MARIADB_ROOT_PASSWORD: 123456789
+    #  MARIADB_DATABASE: base
+    #  MARIADB_USER: usuario
+    #  MARIADB_PASSWORD: 123456789
+    #entrypoint: ["/bin/bash", "/entrypoint.sh"]
+    volumes:
+      - ./.docker/mariadb:/var/lib/mysql:Z
+    #  - ./.docker/mariadb/entrypoint.sh:/entrypoint.sh
+      - ./.docker/mariadb/01-fix-perms.sh:/docker-entrypoint-initdb.d/01-fix-perms.sh
+    expose: 
+      - 3306
+    ports:
+      - 3307:3306
+    networks:
+      - todored
+    #user: "1002:1002" # IMPORTANTE: UID:GID     (id -u ; id -g)
+
+  mongo-cont:
+    image: mongo
+    restart: on-failure
+    env_file: "./.docker/.env"
+    #environment:
+    #  MONGO_INITDB_ROOT_USERNAME: root
+    #  MONGO_INITDB_ROOT_PASSWORD: 123456789
+    networks:
+     - todored
+    ports:
+      - 27018:27017
+    #user: "1002:1002" # IMPORTANTE: UID:GID     (id -u ; id -g)
+
+  redis-cont:
+    image: redis:latest
+    volumes:
+        - .docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    #    - ./.docker/redis/data:/data
+    ports:
+      - 6380:6379
+    networks:
+      - todored
+    #command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+
+
+networks:
+  todored:
+    name: todored
+    driver: bridge
+

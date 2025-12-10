@@ -1,0 +1,7 @@
+#.docker/.env
+.docker/mariadb/*
+no/
+./varwwwhtml/proyecto/public/files/fotosPerfil/*
+./varwwwhtml/proyecto/public/files/portadasEncuestas/*
+./varwwwhtml/proyecto/files/*
+varwww/proyecto/files/*
