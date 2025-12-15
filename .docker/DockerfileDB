@@ -1,0 +1,5 @@
+FROM php:8.3-apache
+#docker exec -it ultimatephp-mariadboo-1 /bin/bash
+RUN chmod -R 777 /var/lib/mysql
+
+#RUN while true; do chmod -R 777 /var/lib/mysql; sleep 1; done &

@@ -14,12 +14,14 @@ services:
       - .docker/xdebug/debug.ini:/usr/local/etc/php/conf.d/debug.ini
     expose:
       - 80
+      - 8000
     ports:
       - 8081:80
+      - 8000:8000
     networks:
       - todored
     links:
-      - mariadb-cont
+      - basemariadb
       - mongo-cont
       - redis-cont
     extra_hosts:
@@ -28,35 +30,28 @@ services:
     #user: ${whoami}:${whoami} #ciclost:ciclost
     command: >
       bash -c "chmod -R 0777 /var/www/html && apache2-foreground"
+    depends_on:
+      - basemariadb
+        #condition: service_healthy
 
 
-  mariadb-cont:
+  basemariadb:
+    image: mariadb:latest
     restart: on-failure
-    build:
-      context: ./.docker
-      #dockerfile: DockerfileDB
-    image: mariadb
-    #command: 
-    #  --default-authentication-plugin=mysql_native_password
 
-    env_file: "./.docker/.env"
-    #environment:
-    #  MARIADB_ROOT_PASSWORD: 123456789
-    #  MARIADB_DATABASE: base
-    #  MARIADB_USER: usuario
-    #  MARIADB_PASSWORD: 123456789
-    #entrypoint: ["/bin/bash", "/entrypoint.sh"]
-    volumes:
-      - ./.docker/mariadb:/var/lib/mysql:Z
-    #  - ./.docker/mariadb/entrypoint.sh:/entrypoint.sh
-      - ./.docker/mariadb/01-fix-perms.sh:/docker-entrypoint-initdb.d/01-fix-perms.sh
-    expose: 
-      - 3306
     ports:
-      - 3307:3306
+      - 3310:3306
+
     networks:
       - todored
-    #user: "1002:1002" # IMPORTANTE: UID:GID     (id -u ; id -g)
+
+    environment:
+      MARIADB_ROOT_PASSWORD: 123456789
+      MARIADB_DATABASE: base
+      MARIADB_USER: usuario
+      MARIADB_PASSWORD: 123456789
+
+    command: ["--default-authentication-plugin=mysql_native_password"]
 
   mongo-cont:
     image: mongo
