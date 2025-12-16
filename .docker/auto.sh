@@ -7,6 +7,7 @@
 #composer update
 #composer dump-autoload
 #cd ../..
+#php artisan migrate
 #php artisan serve
 docker compose down
 docker compose up -d

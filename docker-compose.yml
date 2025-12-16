@@ -24,34 +24,29 @@ services:
       - basemariadb
       - mongo-cont
       - redis-cont
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    #extra_hosts:
+    #  - "host.docker.internal:host-gateway"
     #user: "1002:1002" # IMPORTANTE: UID:GID     (id -u ; id -g)
     #user: ${whoami}:${whoami} #ciclost:ciclost
     command: >
       bash -c "chmod -R 0777 /var/www/html && apache2-foreground"
-    depends_on:
-      - basemariadb
+    #depends_on:
+    #  - basemariadb
         #condition: service_healthy
 
 
   basemariadb:
     image: mariadb:latest
     restart: on-failure
-
     ports:
       - 3310:3306
-
     networks:
       - todored
-
-    environment:
-      MARIADB_ROOT_PASSWORD: 123456789
-      MARIADB_DATABASE: base
-      MARIADB_USER: usuario
-      MARIADB_PASSWORD: 123456789
-
+    volumes:
+      - ./.docker/mariadb:/var/lib/mysql:Z
+    env_file: "./.docker/.env"
     command: ["--default-authentication-plugin=mysql_native_password"]
+    
 
   mongo-cont:
     image: mongo
